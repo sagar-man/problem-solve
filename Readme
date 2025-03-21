@@ -1,0 +1,4 @@
+Compile and Run instructions
+
+g++ bowling.cpp -o bowling
+./bowling
