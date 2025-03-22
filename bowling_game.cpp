@@ -5,10 +5,14 @@
 class BowlingGame
 {
 private:
-    static constexpr int MAX_ROLLS = 21;  // Maximum rolls in a game (including extra rolls in the 10th frame)
-    static constexpr int MAX_FRAMES = 10; // Total number of frames in a bowling game
+    static constexpr int MAX_FRAMES = 10;  // Total number of frames in a game
+    static constexpr int MAX_PINS = 10;    // Maximum pins per frame
+    static constexpr int MAX_ROLLS = 21;   // Maximum possible rolls (including extra rolls in the 10th frame)
+    static constexpr int STRIKE_BONUS_ROLLS = 2; // Bonus rolls after a strike
+    static constexpr int SPARE_BONUS_ROLLS = 1;  // Bonus roll after a spare
+
     std::array<int, MAX_ROLLS> rolls{};   // Stores the number of pins knocked down in each roll
-    int currentRoll = 0;                  // Keeps track of the current roll index
+    int currentRoll = 0;                  // Tracks the current roll index
 
 public:
     /**
@@ -25,7 +29,7 @@ public:
 
     /**
      * @brief Calculates the total score of the game based on the rolls.
-     * @return The final score after 10 frames.
+     * @return The final score after all frames.
      */
     [[nodiscard]] int score() const
     {
@@ -34,14 +38,14 @@ public:
 
         for (int frame = 0; frame < MAX_FRAMES; ++frame)
         {
-            if (isStrike(rollIndex)) // If the player rolls a strike
+            if (isStrike(rollIndex)) // Strike
             {
-                totalScore += 10 + strikeBonus(rollIndex);
+                totalScore += MAX_PINS + strikeBonus(rollIndex);
                 rollIndex += 1; // Move to the next frame (strike takes only one roll)
             }
-            else if (isSpare(rollIndex)) // If the player rolls a spare
+            else if (isSpare(rollIndex)) // Spare
             {
-                totalScore += 10 + spareBonus(rollIndex);
+                totalScore += MAX_PINS + spareBonus(rollIndex);
                 rollIndex += 2; // Move to the next frame (spare takes two rolls)
             }
             else // Normal frame (not a strike or spare)
@@ -55,23 +59,23 @@ public:
 
 private:
     /**
-     * @brief Checks if the current roll is a strike (10 pins knocked down in one roll).
+     * @brief Checks if the current roll is a strike.
      * @param index The current roll index.
      * @return True if it's a strike, false otherwise.
      */
     [[nodiscard]] bool isStrike(int index) const
     {
-        return rolls[index] == 10;
+        return rolls[index] == MAX_PINS;
     }
 
     /**
-     * @brief Checks if the current frame is a spare (10 pins knocked down in two rolls).
+     * @brief Checks if the current frame is a spare.
      * @param index The current roll index.
      * @return True if it's a spare, false otherwise.
      */
     [[nodiscard]] bool isSpare(int index) const
     {
-        return rolls[index] + rolls[index + 1] == 10;
+        return rolls[index] + rolls[index + 1] == MAX_PINS;
     }
 
     /**
@@ -81,7 +85,7 @@ private:
      */
     [[nodiscard]] int strikeBonus(int index) const
     {
-        return rolls[index + 1] + rolls[index + 2];
+        return rolls[index + 1] + rolls[index + STRIKE_BONUS_ROLLS];
     }
 
     /**
@@ -91,11 +95,11 @@ private:
      */
     [[nodiscard]] int spareBonus(int index) const
     {
-        return rolls[index + 2];
+        return rolls[index + SPARE_BONUS_ROLLS + 1];
     }
 
     /**
-     * @brief Calculates the frame score for a normal (non-strike, non-spare) frame.
+     * @brief Calculates the frame score for a normal frame.
      * @param index The current roll index.
      * @return The total score for that frame.
      */
@@ -124,20 +128,20 @@ TEST(BowlingGameTest, AllOnes)
     {
         game.roll(1);
     }
-    ASSERT_EQ(game.score(), 20); // 20 frames * (1+1) = 20
+    ASSERT_EQ(game.score(), 20);
 }
 
 TEST(BowlingGameTest, OneSpare)
 {
     BowlingGame game;
     game.roll(5);
-    game.roll(5); // Spare (5+5=10)
+    game.roll(5); // Spare
     game.roll(3); // Next roll (bonus for spare)
     for (int i = 0; i < 17; i++)
     {
         game.roll(0);
     }
-    ASSERT_EQ(game.score(), 16); // 10 (spare) + 3 (bonus) + 3 = 16
+    ASSERT_EQ(game.score(), 16);
 }
 
 TEST(BowlingGameTest, OneStrike)
@@ -150,17 +154,17 @@ TEST(BowlingGameTest, OneStrike)
     {
         game.roll(0);
     }
-    ASSERT_EQ(game.score(), 24); // 10 (strike) + (3+4 bonus) + 3 + 4 = 24
+    ASSERT_EQ(game.score(), 24);
 }
 
 TEST(BowlingGameTest, PerfectGame)
 {
     BowlingGame game;
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 12; i++) // 12 consecutive strikes
     {
-        game.roll(10); // 12 consecutive strikes
+        game.roll(10);
     }
-    ASSERT_EQ(game.score(), 300); // Maximum possible score
+    ASSERT_EQ(game.score(), 300);
 }
 
 int main(int argc, char **argv)
