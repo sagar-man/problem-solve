@@ -1,37 +1,43 @@
+#include <array>
 #include <iostream>
-#include <vector>
 #include <gtest/gtest.h>
 
 class BowlingGame
 {
 private:
-    std::vector<int> rolls;
+    static constexpr int MAX_ROLLS = 21; // Max possible rolls in a game
+    static constexpr int MAX_FRAMES = 10;
+    std::array<int, MAX_ROLLS> rolls{}; // Initialize with 0s
+    int currentRoll = 0;
 
 public:
     void roll(int pins)
     {
-        rolls.push_back(pins);
+        if (currentRoll < MAX_ROLLS)
+        {
+            rolls[currentRoll++] = pins;
+        }
     }
 
-    int score()
+    [[nodiscard]] int score() const
     {
         int totalScore = 0;
         int rollIndex = 0;
 
-        for (int frame = 0; frame < 10; ++frame)
+        for (int frame = 0; frame < MAX_FRAMES; ++frame)
         {
             if (isStrike(rollIndex))
-            { // Strike case
+            { // Strike
                 totalScore += 10 + strikeBonus(rollIndex);
-                rollIndex += 1; // Strike moves to next frame
+                rollIndex += 1;
             }
             else if (isSpare(rollIndex))
-            { // Spare case
+            { // Spare
                 totalScore += 10 + spareBonus(rollIndex);
                 rollIndex += 2;
             }
             else
-            { // Open frame
+            { // Normal frame
                 totalScore += frameScore(rollIndex);
                 rollIndex += 2;
             }
@@ -40,27 +46,27 @@ public:
     }
 
 private:
-    bool isStrike(int index)
+    [[nodiscard]] bool isStrike(int index) const
     {
         return rolls[index] == 10;
     }
 
-    bool isSpare(int index)
+    [[nodiscard]] bool isSpare(int index) const
     {
         return rolls[index] + rolls[index + 1] == 10;
     }
 
-    int strikeBonus(int index)
+    [[nodiscard]] int strikeBonus(int index) const
     {
         return rolls[index + 1] + rolls[index + 2];
     }
 
-    int spareBonus(int index)
+    [[nodiscard]] int spareBonus(int index) const
     {
         return rolls[index + 2];
     }
 
-    int frameScore(int index)
+    [[nodiscard]] int frameScore(int index) const
     {
         return rolls[index] + rolls[index + 1];
     }
