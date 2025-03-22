@@ -1,4 +1,5 @@
-Compile and Run instructions
+If you don't have Google Test installed, you'll need to download and install it. Installation instructions can be found on the Google Test website: https://github.com/google/googletest
 
-g++ bowling.cpp -o bowling
-./bowling
+g++ -std=c++17 -o bowling_game bowling_game.cpp -lgtest -lgtest_main -pthread
+./bowling_game
+
